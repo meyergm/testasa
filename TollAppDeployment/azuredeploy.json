@@ -1,0 +1,282 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "user": {
+      "type": "string"
+    },
+    "timer": {
+      "type": "string",
+      "metadata": {
+        "description": "Amount of time to run the Toll App WebJob"
+      }
+    } 
+  },
+  "variables": {
+    "webAppName": "[concat('TollApp',parameters('user'))]",
+    "webAppPlanSkuName": "S1",
+    "repoURL": "https: //github.com/ProwessInfo/ASA-TollApp.git",
+    "branch": "develop",
+    "storageAccountType": "Standard_LRS",
+    "eventHub": "[concat('tollApp',parameters('user'),'-','eventhub')]",
+    "storageAccountName": "[concat('tollApp',parameters('user'),'sa')]",
+    "lowerCaseStorageAccountName": "[toLower(variables('storageAccountName'))]",
+    "cosmosDB": "[concat('tollapp',parameters('user'),'-','cosmos')]",
+    "azureStreamAnalyticsJob1": "[concat('tollApp',parameters('user'),'-','asaJob1')]",
+    "azureStreamAnalyticsJob2": "[concat('tollApp',parameters('user'),'-','asaJob2')]",
+    "consumerGroupsDefaultName": "$Default",
+    "consumergroups_asajob_name": "asajob",
+    "eventHubAuthRule": "[concat(variables('eventHub'),'-','AuthRule')]",
+    "asajob_name": "asajob",
+    "offerType": "Standard"
+  },
+  "resources": [
+    {
+      "apiVersion": "2015-04-08",
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "name": "[variables('cosmosDB')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "name": "[variables('cosmosDB')]",
+        "databaseAccountOfferType": "[variables('offerType')]",
+        "locations": [
+          {
+            "locationName": "[resourceGroup().location]",
+            "failoverPriority": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "[variables('lowerCaseStorageAccountName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [],
+      "tags": {
+        "displayName": "storageAccount"
+      },
+      "properties": {
+        "accountType": "[variables('storageAccountType')]"
+      }
+    },
+    {
+      "type": "Microsoft.EventHub/namespaces",
+      "sku": {
+        "name": "Standard",
+        "tier": "Standard",
+        "capacity": 1
+      },
+      "kind": "EventHub",
+      "name": "[variables('eventHub')]",
+      "apiVersion": "2015-08-01",
+      "location": "[resourceGroup().location]",
+      "tags": {},
+      "properties": {
+        "serviceBusEndpoint": "[concat('https://', variables('eventHub'),'.servicebus.windows.net:443/')]"
+      },
+      "resources": [
+        {
+          "type": "AuthorizationRules",
+          "name": "[variables('eventHubAuthRule')]",
+          "apiVersion": "2015-08-01",
+          "properties": {
+            "rights": [
+              "Listen",
+              "Manage",
+              "Send"
+            ]
+          },
+          "resources": [],
+          "dependsOn": [
+            "[resourceId('Microsoft.EventHub/namespaces', variables('eventHub'))]"
+          ]
+        },
+        {
+          "type": "eventhubs",
+          "name": "[variables('eventHub')]",
+          "apiVersion": "2015-08-01",
+          "location": "Central US",
+          "properties": {
+            "messageRetentionInDays": 7
+          },
+          "resources": [],
+          "dependsOn": [
+            "[resourceId('Microsoft.EventHub/namespaces', variables('eventHub'))]"
+          ]
+        },
+        {
+          "type": "eventhubs/consumergroups",
+          "name": "[concat(variables('eventHub'),'/',Variables('consumergroups_asajob_name'))]",
+          "apiVersion": "2015-08-01",
+          "location": "Central US",
+          "properties": {
+          },
+          "resources": [],
+          "dependsOn": [
+            "[resourceId('Microsoft.EventHub/namespaces/', variables('eventHub'))]"
+          ]
+        }
+      ],
+      "dependsOn": []
+    },
+    {
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDB'))]",
+        "[resourceId('Microsoft.EventHub/namespaces', variables('eventHub'))]"
+
+      ],
+      "name": "[variables('azureStreamAnalyticsJob1')]",
+      "type": "Microsoft.StreamAnalytics/streamingjobs",
+      "apiVersion": "2015-10-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "sku": {
+          "name": "standard"
+        },
+        "EventsOutOfOrderMaxDelayInSeconds": 5,
+        "EventsOutOfOrderPolicy": "Adjust",
+        "inputs": [
+          {
+            "name": "EventHub",
+            "properties": {
+              "type": "stream",
+              "serialization": {
+                "type": "JSON",
+                "properties": {
+                  "encoding": "UTF8"
+                }
+              },
+              "datasource": {
+                "type": "Microsoft.ServiceBus/EventHub",
+                "properties": {
+                  "EventHubName": "[variables('eventHub')]",
+                  "ServiceBusNamespace": "[variables('eventHub')]",
+                  "SharedAccessPolicyKey": "[listKeys(concat('Microsoft.EventHub/namespaces/',variables('eventHub'),'/AuthorizationRules/RootManageSharedAccessKey/'),'2017-04-01').primaryKey]",
+                  "SharedAccessPolicyName": "RootManageSharedAccessKey",
+                  "SourcePartitionCount": 4,
+                  "consumerGroupName": "[variables('asajob_name')]"
+                }
+              }
+            }
+          }
+        ],
+        "transformation": {
+          "name": "TumblingWindow",
+          "properties": {
+            "streamingUnits": 1,
+            "query": "SELECT TollId, System.Timestamp AS WindowEnd, COUNT(*) AS Count FROM EntryStream TIMESTAMP BY EntryTime GROUP BY TUMBLINGWINDOW(minute, 3)"
+          }
+        },
+        "outputs": [
+          {
+            "name": "DocumentDB",
+            "properties": {
+              "datasource": {
+                "type": "Microsoft.Storage/DocumentDB",
+                "properties": {
+                  "AccountID": "[variables('cosmosDB')]",
+                  "AccountKey": "[listKeys(concat('Microsoft.DocumentDb/databaseAccounts/',variables('cosmosDB')),'2016-03-31').primaryMasterKey]",
+                  "database": "tollAppDocumentDb",
+                  "CollectionNamePattern": "tollAppCollection",
+                  "PartitionKey": "id"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[variables('azureStreamAnalyticsJob2')]",
+      "type": "Microsoft.StreamAnalytics/streamingjobs",
+      "apiVersion": "2015-10-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "sku": {
+          "name": "standard"
+        }
+      }
+    },
+    {
+      "name": "[variables('webAppName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-08-01",
+      "sku": {
+        "name": "[variables('webAppPlanSkuName')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDB'))]",
+        "[resourceId('Microsoft.EventHub/namespaces', variables('eventHub'))]"
+      ],
+      "tags": {
+        "displayName": "webAppPlan"
+      },
+      "properties": {
+        "name": "[variables('webAppName')]",
+        "numberOfWorkers": 1
+      }
+    },
+    {
+      "name": "[variables('webAppName')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-08-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('webAppName'))]",
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDB'))]",
+        "[resourceId('Microsoft.EventHub/namespaces', variables('eventHub'))]"
+      ],
+      "tags": {
+        "[concat('hidden-related:', resourceId('Microsoft.Web/serverfarms', variables('webAppName')))]": "Resource",
+        "displayName": "webApp"
+      },
+      "properties": {
+        "name": "[variables('webAppName')]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('webAppName'))]"
+      },
+      "resources": [
+        {
+          "name": "web",
+          "type": "sourcecontrols",
+          "apiVersion": "2015-08-01",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', variables('webAppName'))]"
+          ],
+          "tags": {
+            "displayName": "webAppDeploy"
+          },
+          "properties": {
+            "RepoURL": "[variables('repoURL')]",
+            "branch": "[variables('branch')]",
+             "IsManualIntegration":  true
+            }
+        },
+        {
+          "dependsOn": [
+            "[concat('Microsoft.Web/sites/',variables('webAppName'))]",
+            "web"
+          ],
+          "apiVersion": "2015-08-01",
+          "type": "config",
+          "name": "appsettings",
+          "properties": {
+            "DocumentDbUri": "[concat(reference(concat('Microsoft.DocumentDb/databaseAccounts/', variables('cosmosDB'))).documentEndpoint, '@', listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', variables('cosmosDB')), '2015-04-08').primaryMasterKey)]",
+            "DocumentDbKey": "[listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', variables('cosmosDB')), '2015-04-08').primaryMasterKey]",
+            "ConnectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'),';AccountKey=',concat(listKeys(variables('storageAccountName'),'2015-05-01-preview').key1))]",
+            "Microsoft.ServiceBus.ConnectionString": "[listKeys(concat('Microsoft.EventHub/namespaces/',variables('eventHub'),'/AuthorizationRules/RootManageSharedAccessKey/'),'2017-04-01').primaryKey]",
+            "TimerSetting": "[parameters('timer')]",
+            "Sitename": "[variables('webAppName')]"
+          }
+        }
+      ]
+    }
+  ],
+  "outputs": {
+    "webAppUrl": {
+      "type": "string",
+      "value": "[concat('http://', reference(resourceId('Microsoft.Web/sites/', variables('webAppName'))).properties.defaultHostName)]"
+    }
+  }
+}

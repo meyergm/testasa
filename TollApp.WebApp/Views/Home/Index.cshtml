@@ -1,0 +1,27 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+
+    string webJobStatus = "Start";
+    if (Model != null)
+    {
+        webJobStatus = Model;
+    }
+}
+
+<div class="row">
+
+    <p class="lead"><b>Welcome to Microsoft Azure Stream Analytics TollApp Sample</b></p>
+    <p>The TollApp Sample allows you to visualize entry and exit data when a vehicle passes through a toll booth.</p>
+    <p>
+        For scenario information, see <a href="https://docs.microsoft.com/en-us/azure/stream-analytics/stream-analytics-build-an-iot-solution-using-stream-analytics">https://docs.microsoft.com/en-us/azure/stream-analytics/stream-analytics-build-an-iot-solution-using-stream-analytics</a>
+    </p>
+
+    <p>For tutorials that reference these samples, see <a href="http://azure.microsoft.com/en-us/documentation/services/stream-analytics/">http://azure.microsoft.com/en-us/documentation/services/stream-analytics/</a></p>
+
+    <p>For more information about the Stream Analytics service, see <a href="http://azure.microsoft.com/en-us/services/stream-analytics">http://azure.microsoft.com/en-us/services/stream-analytics</a> </p>
+
+    <br />
+    Start or Stop the TollApp Web Job
+    <br />
+    @Html.ActionLink(webJobStatus, "StartStopWebjob", "Home", new { webjobAction = webJobStatus }, new { @class = "btn btn-primary btn-lg" })
+</div>

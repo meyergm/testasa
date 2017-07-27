@@ -1,0 +1,8 @@
+packages/
+TollApp/bin/
+TollApp.WebApp/bin/
+TollApp/obj/
+TollApp.WebApp/obj/
+.vs/
+TollAppDeployment/bin/
+TollApp.WebApp/Properties/PublishProfiles/
