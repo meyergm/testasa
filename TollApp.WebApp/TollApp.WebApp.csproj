@@ -174,6 +174,48 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="App_Data\jobs\continuous\TollApp\DocumentDB.Spatial.Sql.dll" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.Azure.Documents.Client.dll" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.Azure.Documents.Client.xml" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.Azure.Documents.OData.Sql.dll" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.Azure.Documents.OData.Sql.pdb" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.Azure.Documents.OData.Sql.xml" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.Azure.Documents.ServiceInterop.dll" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.Azure.WebJobs.dll" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.Azure.WebJobs.Host.dll" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.Azure.WebJobs.Host.xml" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.Azure.WebJobs.xml" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.Data.Edm.dll" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.Data.Edm.xml" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.Data.OData.dll" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.Data.OData.xml" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.Data.Services.Client.dll" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.Data.Services.Client.xml" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.OData.Core.dll" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.OData.Core.xml" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.OData.Edm.dll" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.OData.Edm.xml" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.ServiceBus.dll" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.ServiceBus.xml" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.Spatial.dll" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.Spatial.xml" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.WindowsAzure.Configuration.dll" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.WindowsAzure.Configuration.xml" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.WindowsAzure.Storage.dll" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Microsoft.WindowsAzure.Storage.xml" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Newtonsoft.Json.dll" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Newtonsoft.Json.xml" />
+    <Content Include="App_Data\jobs\continuous\TollApp\System.Net.Http.Formatting.dll" />
+    <Content Include="App_Data\jobs\continuous\TollApp\System.Net.Http.Formatting.xml" />
+    <Content Include="App_Data\jobs\continuous\TollApp\System.Spatial.dll" />
+    <Content Include="App_Data\jobs\continuous\TollApp\System.Spatial.xml" />
+    <Content Include="App_Data\jobs\continuous\TollApp\System.Web.Http.dll" />
+    <Content Include="App_Data\jobs\continuous\TollApp\System.Web.Http.xml" />
+    <Content Include="App_Data\jobs\continuous\TollApp\System.Web.OData.dll" />
+    <Content Include="App_Data\jobs\continuous\TollApp\System.Web.OData.xml" />
+    <Content Include="App_Data\jobs\continuous\TollApp\TollApp.exe" />
+    <Content Include="App_Data\jobs\continuous\TollApp\TollApp.pdb" />
+    <Content Include="App_Data\jobs\continuous\TollApp\TollApp.vshost.exe" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="favicon.ico" />
@@ -182,6 +224,9 @@
     <Content Include="Content\Site.css" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="App_Data\jobs\continuous\TollApp\TollApp.exe.config" />
+    <Content Include="App_Data\jobs\continuous\TollApp\TollApp.vshost.exe.config" />
+    <Content Include="App_Data\jobs\continuous\TollApp\TollApp.vshost.exe.manifest" />
     <None Include="Properties\PublishProfiles\TollApp - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\TollApp - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
@@ -211,9 +256,7 @@
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="App_Data\jobs\continuous\TollApp\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
     <Content Include="fonts\glyphicons-halflings-regular.ttf" />
