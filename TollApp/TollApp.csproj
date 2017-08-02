@@ -73,12 +73,13 @@
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Web.Http, Version=5.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.2\lib\net45\System.Web.Http.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Web.OData, Version=5.9.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.OData.5.9.0\lib\net45\System.Web.OData.dll</HintPath>
+    <Reference Include="System.Web.OData, Version=5.9.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.OData.5.9.1\lib\net45\System.Web.OData.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Xml.Linq" />
@@ -114,19 +115,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\CloudConfiguration.cs" />
-    <Compile Include="Events\Entry.cs" />
+    <Compile Include="Configs\CloudConfiguration.cs" />
+    <Compile Include="Events\EntryEvent.cs" />
     <Compile Include="Events\EventBuffer.cs" />
-    <Compile Include="Events\Exit.cs" />
+    <Compile Include="Events\ExitEvent.cs" />
     <Compile Include="Models\CarModel.cs" />
-    <Compile Include="Models\Constants.cs" />
-    <Compile Include="Models\TollEvent.cs" />
+    <Compile Include="Events\Data.cs" />
+    <Compile Include="Events\TollEvent.cs" />
     <Compile Include="Models\Registration.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Senders\DocumentDbSender.cs" />
     <Compile Include="Senders\EventHubSender.cs" />
     <Compile Include="Events\TollDataGenerator.cs" />
+    <Compile Include="Utils\AzureResourcesCreator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

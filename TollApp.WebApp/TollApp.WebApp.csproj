@@ -228,8 +228,7 @@
     <Content Include="App_Data\jobs\continuous\TollApp\TollApp.exe.config" />
     <Content Include="App_Data\jobs\continuous\TollApp\TollApp.vshost.exe.config" />
     <Content Include="App_Data\jobs\continuous\TollApp\TollApp.vshost.exe.manifest" />
-    <None Include="Properties\PublishProfiles\TollApp - FTP.pubxml" />
-    <None Include="Properties\PublishProfiles\TollApp - Web Deploy.pubxml" />
+    <Content Include="App_Data\jobs\continuous\TollApp\Registration.json" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />
@@ -257,7 +256,9 @@
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Properties\PublishProfiles\" />
+  </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
     <Content Include="fonts\glyphicons-halflings-regular.ttf" />

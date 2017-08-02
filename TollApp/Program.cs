@@ -1,14 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using Microsoft.Azure.WebJobs;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Newtonsoft.Json;
-using Microsoft.ServiceBus.Messaging;
-using Newtonsoft.Json.Linq;
-using TollApp.Senders;
+using TollApp.Configs;
 using TollApp.Events;
-using System.Threading;
 using TollApp.Models;
+using TollApp.Senders;
+using TollApp.Utils;
 
 namespace TollApp
 {
@@ -18,62 +20,45 @@ namespace TollApp
         #region Private variables 
 
         private static Timer _timer;
-        private static EventHubClient _eventHubName;
-        private static Registration[] _commercialVehicleRegistration;
         #endregion
 
         #region Public Methods
 
         public static void Main(string[] args)
         {
-            CreateBlobs();
+            JobHost host = new JobHost();
+            host.Call(typeof(Program).GetMethod("SendData"));
+        }
+
+        [NoAutomaticTrigger]
+        public static void SendData()
+        {
+            var commercialVehicleRegistration = AzureResourcesCreator.CreateBlob();
+            AzureResourcesCreator.CreateAzureCosmosDb();
+            var eventHubSender = new EventHubSender();
 
             try
             {
-                // verify and create document db collection                     
-                DocumentDbSender.CreateDocumentDb();
-
-                // create Event Hub
-                var entryEventHub = EventHubClient.CreateFromConnectionString(CloudConfiguration.EventHubConnectionString, CloudConfiguration.EntryName);
-                var exitEventHub = EventHubClient.CreateFromConnectionString(CloudConfiguration.EventHubConnectionString, CloudConfiguration.ExitName);
-
                 // generate data
-                var generator = TollDataGenerator.Generator(_commercialVehicleRegistration);
-                
-                TollEvent data;
+                var generator = TollDataGenerator.Generator(commercialVehicleRegistration);
 
                 var timerInterval = TimeSpan.FromSeconds(Convert.ToDouble(CloudConfiguration.TimerInterval));
-              
+
                 TimerCallback timerCallback = state =>
                 {
                     var startTime = DateTime.UtcNow;
                     generator.Next(startTime, timerInterval, 5);
 
-                    foreach (var e in generator.GetEvents(startTime))
+                    foreach (var tollEvent in generator.GetEvents(startTime))
                     {
-                        if (e is Entry.EntryEvent)
-                        {
-                            _eventHubName = entryEventHub;
-                        }
-                        else
-                        {
-                           _eventHubName = exitEventHub;
-                        }
-                        data = e;
-
-                        // Write to Event Hub
-                        Senders.EventHubSender.SendData(_eventHubName, data);
-                      
-                        //send documentDB
-                        JObject json = JObject.Parse(data.Format());
-                        DocumentDbSender.SendInfo(json);
+                        eventHubSender.SendData(tollEvent);
                     }
                     _timer.Change((int)timerInterval.TotalMilliseconds, Timeout.Infinite);
                 };
 
                 _timer = new Timer(timerCallback, null, Timeout.Infinite, Timeout.Infinite);
                 _timer.Change(0, Timeout.Infinite);
-                
+
                 var exitEvent = new ManualResetEvent(false);
                 Console.CancelKeyPress += (sender, eventArgs) =>
                 {
@@ -82,58 +67,19 @@ namespace TollApp
                     exitEvent.Set();
                 };
 
-                exitEvent.WaitOne();              
+                exitEvent.WaitOne();
                 _timer.Change(Timeout.Infinite, Timeout.Infinite);
                 Thread.Sleep(timerInterval);
                 _timer.Dispose();
-                entryEventHub.Close();
-                exitEventHub.Close();            
 
+                eventHubSender.DisposeSender();
             }
             catch (Exception exception)
             {
-                //log to text file on blob               
-               // _errorLogBlockBlob.UploadText(exception.ToString());
+                Console.Error.WriteLine(exception.ToString());
             }
         }
 
         #endregion
-
-        #region Private Methods
-
-        private static void CreateBlobs()
-        {
-            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(CloudConfiguration.StorageAccountUrl);
-            CloudBlobContainer container = storageAccount.CreateCloudBlobClient().GetContainerReference(CloudConfiguration.StorageAccountContainer);
-            CloudBlockBlob registrationBlockBlob = container.GetBlockBlobReference(CloudConfiguration.RegistrationFileBlob);
-
-            //Create a new container, if it does not exist
-            container.CreateIfNotExists();
-
-            using (var fileStream = File.OpenRead(@"Data\Registration.json"))
-            {
-                registrationBlockBlob.UploadFromStream(fileStream);
-            }
-
-            //read Registration.json from BLOB to be used for random data generator
-            using (var stream = new MemoryStream())
-            {
-                registrationBlockBlob.DownloadToStream(stream);
-                stream.Position = 0; //resetting stream's position to 0
-                var serializer = new JsonSerializer();
-
-                using (var sr = new StreamReader(stream))
-                {
-                    using (var jsonTextReader = new JsonTextReader(sr))
-                    {
-                        var jsonStream = serializer.Deserialize(jsonTextReader);
-                        _commercialVehicleRegistration = JsonConvert.DeserializeObject<Registration[]>(jsonStream.ToString());
-                    }
-                }
-            }
-        }
-
-        #endregion
-
     }
 }

@@ -1,20 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TollApp.Models;
 
 namespace TollApp.Events
 {
     internal class EventBuffer
     {
+        #region Private variables
+
         private long _eventId;
         private readonly SortedList<TollEventKey, TollEvent> _events;
+
+        #endregion
+
+        #region Constructor
 
         internal EventBuffer()
         {
             _eventId = 0;
             _events = new SortedList<TollEventKey, TollEvent>(new TollEventKeyComparer());
         }
+
+        #endregion
+
+        #region Public Methods
 
         public IEnumerable<TollEvent> GetEvents(DateTime time)
         {
@@ -32,6 +41,10 @@ namespace TollApp.Events
                 }
             }
         }
+
+        #endregion
+
+        #region Private Methods
 
         internal void Add(DateTime timeStamp, TollEvent e)
         {
@@ -56,5 +69,7 @@ namespace TollApp.Events
                     : x.EventId.CompareTo(y.EventId);
             }
         }
+
+        #endregion
     }
 }
