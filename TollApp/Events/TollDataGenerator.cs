@@ -9,7 +9,7 @@ namespace TollApp.Events
     {
         #region Private Variables
 
-        private const int MaxTollId = 3;
+        private const int MaxTollId = 4;
 
         // One of the toll stations will intentionally be missing exit events to demonstrate use of outer left join
         private const int TollIdWithFailedExitSensor = 5;
@@ -19,7 +19,6 @@ namespace TollApp.Events
         private readonly Registration[] _commercialVehicleRegistration;
 
         #endregion
-
 
         #region Public Methods
 

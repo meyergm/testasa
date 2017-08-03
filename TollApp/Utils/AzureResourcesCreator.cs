@@ -27,7 +27,7 @@ namespace TollApp.Utils
                 //Create a new container, if it does not exist
                 container.CreateIfNotExists();
 
-                using (var fileStream = File.OpenRead(@"Registration.json"))
+                using (var fileStream = File.OpenRead(@"registration.json"))
                 {
                     registrationBlockBlob.UploadFromStream(fileStream);
                 }
